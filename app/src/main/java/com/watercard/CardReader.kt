@@ -34,7 +34,10 @@ class CardReader(private val port: UsbSerialPort) {
             read += n
         }
         
-        if (header[0].toInt() != 0x00 || header[1].toInt() != 0x02) {
+        // إصلاح جذري: استخراج القيم كـ Int أولاً
+        val h0 = header[0].toInt() and 0xFF
+        val h1 = header[1].toInt() and 0xFF
+        if (h0 != 0x00 || h1 != 0x02) {
             throw RuntimeException("رأس رد غير متوقع")
         }
 
@@ -53,8 +56,10 @@ class CardReader(private val port: UsbSerialPort) {
         var x = 0x33
         for (b in payload) x = x xor (b.toInt() and 0xFF)
         
-        // إصلاح السطر 49: تحويل البايتات إلى Int قبل المقارنة
-        if ((x and 0xFF) != (body[len].toInt() and 0xFF)) {
+        // إصلاح جذري للمقارنة الثانية
+        val calculatedChk = x and 0xFF
+        val receivedChk = body[len].toInt() and 0xFF
+        if (calculatedChk != receivedChk) {
             throw RuntimeException("CHK غير مطابق")
         }
 
