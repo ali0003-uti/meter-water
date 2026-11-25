@@ -33,8 +33,11 @@ class CardReader(private val port: UsbSerialPort) {
             if (n <= 0) throw RuntimeException("انتهت المهلة في رأس الرد")
             read += n
         }
-        if ((header[0].toInt() and 0xFF) != 0x00 || (header[1].toInt() and 0xFF) != 0x02)
+        
+        // تم إصلاح السطر 46 هنا
+        if (header[0].toInt() != 0x00 || header[1].toInt() != 0x02) {
             throw RuntimeException("رأس رد غير متوقع")
+        }
 
         val len = (header[2].toInt() and 0xFF) or ((header[3].toInt() and 0xFF) shl 8)
         if (len <= 0 || len > 64) throw RuntimeException("طول رد غير منطقي: $len")
