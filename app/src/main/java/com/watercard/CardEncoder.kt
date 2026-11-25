@@ -92,4 +92,4 @@ data class DecodedCard(
     }
 }
 
-fun ByteArray.toHex(): String = joinToString(" ") { "%02X".format(it) }
+fun ByteArray.toHex(): String = this.joinToString(" ") { String.format("%02X", it) }
