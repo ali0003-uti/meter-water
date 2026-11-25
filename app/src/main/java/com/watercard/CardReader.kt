@@ -34,11 +34,10 @@ class CardReader(private val port: UsbSerialPort) {
             read += n
         }
         
-        // إصلاح جذري: استخراج القيم كـ Int أولاً
-        val h0 = header[0].toInt() and 0xFF
-        val h1 = header[1].toInt() and 0xFF
-        if (h0 != 0x00 || h1 != 0x02) {
-            throw RuntimeException("رأس رد غير متوقع")
+        // مقارنة آمنة باستخدام النصوص
+        val headerHex = header.joinToString("") { "%02X".format(it) }
+        if (headerHex != "0002") {
+            throw RuntimeException("رأس رد غير متوقع: $headerHex")
         }
 
         val len = (header[2].toInt() and 0xFF) or ((header[3].toInt() and 0xFF) shl 8)
@@ -56,7 +55,7 @@ class CardReader(private val port: UsbSerialPort) {
         var x = 0x33
         for (b in payload) x = x xor (b.toInt() and 0xFF)
         
-        // إصلاح جذري للمقارنة الثانية
+        // مقارنة آمنة للتحقق من CHK
         val calculatedChk = x and 0xFF
         val receivedChk = body[len].toInt() and 0xFF
         if (calculatedChk != receivedChk) {
