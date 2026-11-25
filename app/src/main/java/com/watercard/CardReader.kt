@@ -12,24 +12,16 @@ class CardReader(private val port: UsbSerialPort) {
         private val CONFIG = byteArrayOf(0x60, 0x08, 0x80.toByte(), 0xE8.toByte())
     }
 
-    // دالة مساعدة (غير معلقة) لبناء الإطار
     private fun buildFrame(data: ByteArray): ByteArray {
         var x = 0x33
         for (b in data) {
             x = x xor (b.toInt() and 0xFF)
         }
         val len = data.size
-        val header = byteArrayOf((len and 0xFF).toByte(), ((len shr 8) and 0xFF).toByte())
-        return header + data + byteArrayOf((x and 0xFF).toByte())
-    }
-
-    // دالة مساعدة (غير معلقة) لحساب CHK
-    private fun calculateCheck(data: ByteArray): Int {
-        var x = 0x33
-        for (b in data) {
-            x = x xor (b.toInt() and 0xFF)
-        }
-        return x and 0xFF
+        return byteArrayOf(
+            (len and 0xFF).toByte(),
+            ((len shr 8) and 0xFF).toByte()
+        ) + data + byteArrayOf((x and 0xFF).toByte())
     }
 
     private suspend fun send(data: ByteArray): ByteArray {
@@ -62,13 +54,17 @@ class CardReader(private val port: UsbSerialPort) {
         }
 
         val payload = body.copyOfRange(0, len)
+        var x = 0x33
+        for (b in payload) {
+            x = x xor (b.toInt() and 0xFF)
+        }
         
-        // استخدام الدوال المساعدة في المقارنة (تجنب أي التباس)
-        val calculated = calculateCheck(payload)
-        val received = body[len].toInt() and 0xFF
+        // مقارنة آمنة تضمن عدم ظهور خطأ compareTo
+        val calculated = (x and 0xFF).toInt()
+        val received = (body[len].toInt() and 0xFF).toInt()
         
         if (calculated != received) {
-            throw RuntimeException("CHK غير مطابق: $calculated != $received")
+            throw RuntimeException("CHK غير مطابق")
         }
 
         return payload
