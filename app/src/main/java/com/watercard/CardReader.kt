@@ -14,7 +14,9 @@ class CardReader(private val port: UsbSerialPort) {
 
     private fun buildFrame(data: ByteArray): ByteArray {
         var x = 0x33
-        for (b in data) x = x xor (b.toInt() and 0xFF)
+        for (b in data) {
+            x = x xor (b.toInt() and 0xFF)
+        }
         val len = data.size
         return byteArrayOf(
             (len and 0xFF).toByte(),
@@ -34,10 +36,10 @@ class CardReader(private val port: UsbSerialPort) {
             read += n
         }
         
-        // مقارنة آمنة باستخدام النصوص
-        val headerHex = header.joinToString("") { "%02X".format(it) }
-        if (headerHex != "0002") {
-            throw RuntimeException("رأس رد غير متوقع: $headerHex")
+        val h0 = header[0].toInt()
+        val h1 = header[1].toInt()
+        if (h0 != 0x00 || h1 != 0x02) {
+            throw RuntimeException("رأس رد غير متوقع")
         }
 
         val len = (header[2].toInt() and 0xFF) or ((header[3].toInt() and 0xFF) shl 8)
@@ -51,14 +53,16 @@ class CardReader(private val port: UsbSerialPort) {
             read += n
         }
 
+        // تبسيط المقارنة النهائية
         val payload = body.copyOfRange(0, len)
         var x = 0x33
-        for (b in payload) x = x xor (b.toInt() and 0xFF)
+        for (b in payload) {
+            x = x xor (b.toInt() and 0xFF)
+        }
         
-        // مقارنة آمنة للتحقق من CHK
-        val calculatedChk = x and 0xFF
-        val receivedChk = body[len].toInt() and 0xFF
-        if (calculatedChk != receivedChk) {
+        val calculated = x and 0xFF
+        val received = body[len].toInt() and 0xFF
+        if (calculated != received) {
             throw RuntimeException("CHK غير مطابق")
         }
 
