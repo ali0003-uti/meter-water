@@ -34,7 +34,7 @@ class CardReader(private val port: UsbSerialPort) {
             read += n
         }
         if (header[0] != 0x00.toByte() || header[1] != 0x02.toByte())
-            throw RuntimeException("رأس رد غير متوقع: ${header.toHex()}")
+            throw RuntimeException("رأس رد غير متوقع")
 
         val len = (header[2].toInt() and 0xFF) or ((header[3].toInt() and 0xFF) shl 8)
         if (len <= 0 || len > 64) throw RuntimeException("طول رد غير منطقي: $len")
@@ -99,5 +99,3 @@ class CardReader(private val port: UsbSerialPort) {
         return expected.contentEquals(actual)
     }
 }
-
-private fun Byte.toHexByte(): String = "%02X".format(this)
