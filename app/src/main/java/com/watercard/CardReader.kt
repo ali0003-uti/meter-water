@@ -33,7 +33,7 @@ class CardReader(private val port: UsbSerialPort) {
             if (n <= 0) throw RuntimeException("انتهت المهلة في رأس الرد")
             read += n
         }
-        if (header[0] != 0x00.toByte() || header[1] != 0x02.toByte())
+        if ((header[0].toInt() and 0xFF) != 0x00 || (header[1].toInt() and 0xFF) != 0x02)
             throw RuntimeException("رأس رد غير متوقع")
 
         val len = (header[2].toInt() and 0xFF) or ((header[3].toInt() and 0xFF) shl 8)
