@@ -53,17 +53,17 @@ class CardReader(private val port: UsbSerialPort) {
             read += n
         }
 
-        // تبسيط المقارنة النهائية
         val payload = body.copyOfRange(0, len)
         var x = 0x33
         for (b in payload) {
             x = x xor (b.toInt() and 0xFF)
         }
         
-        val calculated = x and 0xFF
-        val received = body[len].toInt() and 0xFF
-        if (calculated != received) {
-            throw RuntimeException("CHK غير مطابق")
+        // الحل الجذري: مقارنة النصوص السداسية عشرية لتجنب أي خطأ في الأنواع
+        val calculatedHex = "%02X".format(x and 0xFF)
+        val receivedHex = "%02X".format(body[len].toInt() and 0xFF)
+        if (calculatedHex != receivedHex) {
+            throw RuntimeException("CHK غير مطابق: $calculatedHex != $receivedHex")
         }
 
         return payload
