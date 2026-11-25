@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prolific PL2303 -->
+    <usb-device vendor-id="1659" product-id="8963" />
+    <usb-device vendor-id="1659" product-id="9123" />
+    <!-- FTDI (احتياطي) -->
+    <usb-device vendor-id="1027" product-id="24577" />
+    <!-- Silicon Labs CP210x (احتياطي) -->
+    <usb-device vendor-id="4292" product-id="60000" />
+</resources>
