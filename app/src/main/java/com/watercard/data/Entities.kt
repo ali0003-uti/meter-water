@@ -14,7 +14,11 @@ data class Subscriber(
     val limitQty: Int = 100,
     val nextCount: Int = 1,
     val createdAt: Long = System.currentTimeMillis()
-)
+) {
+    fun copyWithNextCount(newCount: Int): Subscriber {
+        return this.copy(nextCount = newCount)
+    }
+}
 
 @Entity(tableName = "charges")
 data class Charge(
@@ -26,6 +30,3 @@ data class Charge(
     val cardHex: String,
     val createdAt: Long = System.currentTimeMillis()
 )
-    fun copyWithNextCount(newCount: Int): Subscriber {
-        return this.copy(nextCount = newCount)
-    }
