@@ -26,3 +26,6 @@ data class Charge(
     val cardHex: String,
     val createdAt: Long = System.currentTimeMillis()
 )
+    fun copyWithNextCount(newCount: Int): Subscriber {
+        return this.copy(nextCount = newCount)
+    }
