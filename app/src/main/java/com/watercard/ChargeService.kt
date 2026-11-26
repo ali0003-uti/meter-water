@@ -22,9 +22,10 @@ class ChargeService(private val db: AppDatabase) {
 
         reader.writeCard(newCard)
 
-        val verify = try { reader.verifyWritten(newCard) } catch (e: Exception) {
+                val verify = try { reader.writeAndVerify(newCard) } catch (e: Exception) {
             Log.w("ChargeService", "فشل التحقق بعد الكتابة: ${e.message}")
             false
+        }
         }
         if (!verify) {
             Log.w("ChargeService", "التحقق الكامل فشل — قد يكون العدّاد عدّل بايتات الحالة")
