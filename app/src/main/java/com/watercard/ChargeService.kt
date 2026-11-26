@@ -20,12 +20,10 @@ class ChargeService(private val db: AppDatabase) {
         val count = subscriber.nextCount
         val newCard = CardEncoder.encode(subscriber.userNo, count, qty)
 
-        reader.writeCard(newCard)
-
-                val verify = try { reader.writeAndVerify(newCard) } catch (e: Exception) {
+        // استخدام دالة الكتابة والتحقق الجديدة
+        val verify = try { reader.writeAndVerify(newCard) } catch (e: Exception) {
             Log.w("ChargeService", "فشل التحقق بعد الكتابة: ${e.message}")
             false
-        }
         }
         if (!verify) {
             Log.w("ChargeService", "التحقق الكامل فشل — قد يكون العدّاد عدّل بايتات الحالة")
@@ -39,7 +37,7 @@ class ChargeService(private val db: AppDatabase) {
             cardHex = newCard.toHex()
         )
         db.chargeDao().insert(charge)
-        db.subscriberDao().update(subscriber.copy(nextCount = count + 1))
+        db.subscriberDao().update(subscriber.copyWithNextCount(count + 1))
 
         return charge
     }
@@ -60,7 +58,7 @@ class ChargeService(private val db: AppDatabase) {
         val saved = sub.copy(id = id)
 
         val charge = charge(reader, saved, firstQty)
-        val updated = saved.copy(nextCount = 2)
+        val updated = saved.copyWithNextCount(2)
         return updated to charge
     }
 }
